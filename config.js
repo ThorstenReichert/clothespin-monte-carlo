@@ -7,7 +7,10 @@ module.exports = function (wagner) {
     config.node = {};
 
     // number of worker threads
-    config.node.concurrency = 4;
+    config.node.concurrency = 3;
+
+    // number of parallel tasks on callstack per worker
+    config.node.parallel = 50;
 
     config.sim = {};
 
@@ -21,7 +24,7 @@ module.exports = function (wagner) {
     config.sim.pins = 22;
 
     // # or monte-carlo iterations per thread
-    config.sim.steps = 1000000;
+    config.sim.steps = 10000000;
 
     // half-width of clothespins
     config.sim.width = 2;
@@ -31,8 +34,11 @@ module.exports = function (wagner) {
     // width of console output
     config.gfx.width = 100;
 
-    // percentage of completion after which status is updated
-    config.gfx.update = 10;
+    // [%] of completion after which status is updated
+    config.gfx.update = 5;
+
+    // delay intervall for status screen [ms]
+    config.gfx.delay = 1000;
 
     config.gpl = {};
 
