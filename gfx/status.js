@@ -22,7 +22,7 @@ module.exports = function (wagner) {
 
             for(let i = 0; i < Config.node.concurrency; i++) {
                 let rel = Math.floor((Config.gfx.width - 2) * progress[i]);
-                let s = '*' + Array(rel).join('|') + '*';
+                let s = '*' + Array(rel).join('|') + Array(Config.gfx.width - 2 - rel).join(' ') + '*';
                 console.log(s);
             }
         };
