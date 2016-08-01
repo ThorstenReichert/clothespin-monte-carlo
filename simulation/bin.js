@@ -4,9 +4,9 @@ module.exports = function (wagner) {
 
     return wagner.invoke(function (Config) {
 
-        return function (res, pos) {
+        return function (sum, pos) {
             let i = Math.floor(pos / Config.sim.bin);
-            res[i] += 1;
+            sum[i] += 1;
         };
 
     });

@@ -1,10 +1,12 @@
 'use strict';
 
+const cluster = require('cluster');
 const wagner = require('wagner-core');
+const init = require('./util/init-array');
 
 // setup config
 // has to be first in setup phase
-require('./config')(wagner);
+const config = require('./config')(wagner);
 
 // setup random number generator
 require('./simulation/random')(wagner);
@@ -12,42 +14,62 @@ require('./simulation/random')(wagner);
 // setup sort function
 require('./simulation/sort')(wagner);
 
-//setup step function
-const step = require('./simulation/step')(wagner);
+if (cluster.isMaster) {
 
-// setup binning function
-const bin = require('./simulation/bin')(wagner);
+    const add = require('./util/add-array');
+    const plot = require('./gfx/plot')(wagner);
+    const status = require('./gfx/status')(wagner);
 
-// setup display function
-const display = require('./gfx/print')(wagner);
+    let progress = init(config.node.concurrency, 0);
+    let sum = init(config.node.concurrency, null);
 
-wagner.invoke(function (Config) {
-    let sum = [];
-    let res = null;
-    let n = Math.floor(Config.sim.length / Config.sim.bin);
+    for (let i = 0; i < config.node.concurrency; i++) {
+        let worker = cluster.fork();
 
-    for (let i = 0; i < n; i++) {
-        sum.push(0);
+        worker.on('message', function (msg) {
+            if (msg.progress) {
+                progress[i] = msg.progress;
+                status(progress);
+            }
+
+            if (msg.sum) {
+                sum[i] = msg.sum;
+                if (sum.indexOf(null) === -1) {
+                    let total = add(sum);
+
+                    const gpl = require('gnu-plot')();
+                    plot(gpl, total);
+                }
+            }
+        });
     }
 
-    for (let i = 0; i < Config.sim.steps; i++) {
+} else {
+
+    const step = require('./simulation/step')(wagner);
+    const bin = require('./simulation/bin')(wagner);
+
+    let n = Math.floor(config.sim.length / config.sim.bin);
+    let k = Math.floor(config.sim.steps * config.gfx.update / 100);
+    let sum = init(n, 0);
+    let res = null;
+
+    for (let i = 0; i < config.sim.steps; i++) {
         res = step();
 
-        for (let k = 0; k < res.length; k++) {
-            bin(sum, res[k]);
+        for (let j = 0; j < res.length; j++) {
+            bin(sum, res[j]);
+        }
+
+        if ((i % k) === 0) {
+            let progress = i / config.sim.steps;
+            process.send({progress: progress});
         }
     }
 
-    const gnuplot = require('gnu-plot')();
-    const data = Array(sum.length);
-    for (let i = 0; i < sum.length; i++) {
-        data[i] = [i, sum[i]];
-    }
+    process.send({
+        progress: 1,
+        sum: sum
+    });
 
-    gnuplot.plot([{
-        title: 'clothespins',
-        //style: 'points pointtype 5 pointsize 0.5',
-        data: data
-    }]);
-
-});
+}
