@@ -6,24 +6,32 @@ module.exports = function (wagner) {
 
     return wagner.invoke(function (Config, Random, Sort) {
 
-        return function () {
-            let res = [];
-            let l = Config.sim.length;
-            let n = Config.sim.pins;
-            let w = Config.sim.width;
+        if (Config.engine === 'c++') {
+            const engine = require('../addons/stepfunction/build/Release/stepfunction');
 
-            for (let i = 0; i < n; i++) {
-                res.push(Random(0.0, l - (2.0 * n * w)));
+            return function () {
+                return engine.step(Config.sim.length, Config.sim.width, Config.sim.pins);
             }
+        } else {
+            return function () {
+                let res = [];
+                let l = Config.sim.length;
+                let n = Config.sim.pins;
+                let w = Config.sim.width;
 
-            Sort(res);
+                for (let i = 0; i < n; i++) {
+                    res.push(Random(0.0, l - (2.0 * n * w)));
+                }
 
-            for (let i = 0; i < n; i++) {
-                res[i] = res[i] + ( 2.0 * i + 1.0 ) * w;
-            }
+                Sort(res);
 
-            return res;
-        };
+                for (let i = 0; i < n; i++) {
+                    res[i] = res[i] + ( 2.0 * i + 1.0 ) * w;
+                }
+
+                return res;
+            };
+        }
 
     });
 

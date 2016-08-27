@@ -6,7 +6,7 @@ module.exports = function (wagner) {
 
         return function (timer) {
             let total = Config.sim.steps * Config.node.concurrency;
-            let rate = Math.floor(total / timer.diff);
+            let rate = total / timer.diff;
 
             console.log('');
             console.log('');

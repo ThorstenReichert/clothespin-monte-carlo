@@ -49,8 +49,12 @@ if (cluster.isMaster) {
                     status(progress);
                     result(timer);
 
-                    const gpl = require('gnu-plot')();
-                    plot(gpl, total);
+                    if (!config.gpl.disable){ 
+                        const gpl = require('gnu-plot')();
+                        plot(gpl, total);
+                    } else {
+                        process.exit();
+                    }
                 }
             }
         });

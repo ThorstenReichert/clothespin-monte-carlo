@@ -4,10 +4,13 @@ module.exports = function (wagner) {
 
     const config = {};
 
+    // use 'js' or 'c++' addon for main calculation
+    config.engine = 'c++'
+
     config.node = {};
 
     // number of worker threads
-    config.node.concurrency = 3;
+    config.node.concurrency = 1;
 
     // number of parallel tasks on callstack per worker
     config.node.parallel = 50;
@@ -18,13 +21,13 @@ module.exports = function (wagner) {
     config.sim.bin = 0.01;
 
     // length of washing line
-    config.sim.length = 100.0;
+    config.sim.length = 10000.0;
 
     // number of pins
-    config.sim.pins = 22;
+    config.sim.pins = 2200;
 
     // # or monte-carlo iterations per thread
-    config.sim.steps = 10000000;
+    config.sim.steps = 10000;
 
     // half-width of clothespins
     config.sim.width = 2;
@@ -44,6 +47,9 @@ module.exports = function (wagner) {
 
     // display style
     config.gpl.style = 'lines';
+
+    // disable plotting
+    config.gpl.disable = true;
 
 
     wagner.factory('Config', function () {
